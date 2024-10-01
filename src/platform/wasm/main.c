@@ -66,14 +66,14 @@ void runLoop() {
 		double now = emscripten_get_now();
 		double elapsedNow = now - (renderer.lastNow > 0.0 ? renderer.lastNow : now);
 		double nowFrames = elapsedNow / (1000.0 / 60.0); // 60fps target
-		renderer.lastNow = now;
 
-		// custom rounding, we want to prefer rounding down slightly
-		Uint32 nowFramesInt = round(nowFrames - 0.3);
+		Sint32 nowFramesInt = nowFrames;
 
 		if (nowFramesInt < 1) {
-			nowFramesInt = 1;
+			return;
 		}
+
+		renderer.lastNow = now;
 
 		if (renderer.fastForwardSpeed > 1)
 			nowFramesInt *= renderer.fastForwardSpeed;
