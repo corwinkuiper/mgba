@@ -64,17 +64,24 @@ void runLoop() {
 	}
 	if (renderer.core) {
 		double now = emscripten_get_now();
-		double elapsedNow = now - renderer.lastNow;
+		double elapsed = now - renderer.lastLoopTime;
+		renderer.lastLoopTime = now;
+
 		double targetFrameTime = 1000.0 / 60.0;
-		double nowFrames = elapsedNow / targetFrameTime; // 60fps target
 
-		Sint32 nowFramesInt = nowFrames;
+		renderer.frameTime += elapsed;
 
+		double numberOfFrames = (renderer.frameTime + 0.2) / targetFrameTime;
+		Sint32 nowFramesInt = numberOfFrames;
 		if (nowFramesInt < 1) {
 			return;
 		}
 
-		renderer.lastNow += nowFramesInt * targetFrameTime;
+		renderer.frameTime -= nowFramesInt * targetFrameTime;
+
+		if (renderer.frameTime < 0.0) {
+			renderer.frameTime = 0.0;
+		}
 
 		if (renderer.fastForwardSpeed > 1)
 			nowFramesInt *= renderer.fastForwardSpeed;
@@ -447,7 +454,8 @@ int main() {
 	// exclude specific key events
 	SDL_SetEventFilter(excludeKeys, NULL);
 
-	renderer.lastNow = 0.0;
+	renderer.lastLoopTime = 0.0;
+	renderer.frameTime = 0.0;
 
 	emscripten_set_main_loop(runLoop, 0, 0);
 	return 0;

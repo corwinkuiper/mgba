@@ -17,7 +17,8 @@ struct mEmscriptenRenderer {
 	struct mSDLAudio audio;
 
 	// fps related variables
-	double lastNow;
+	double lastLoopTime;
+	double frameTime;
 	int fastForwardSpeed;
 	bool renderFirstFrame;
 };
