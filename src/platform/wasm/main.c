@@ -402,12 +402,48 @@ addCoreCallbacks(void (*alarmCallbackPtr)(void* context), void (*coreCrashedCall
 	}
 }
 
+char* getLogLevelStr(enum mLogLevel level) {
+	switch (level) {
+	case mLOG_FATAL:
+		return "Fatal";
+	case mLOG_ERROR:
+		return "Error";
+	case mLOG_WARN:
+		return "Warn";
+	case mLOG_INFO:
+		return "Info";
+	case mLOG_DEBUG:
+		return "Debug";
+	case mLOG_STUB:
+		return "Stub";
+	case mLOG_GAME_ERROR:
+		return "Game Error";
+	default:
+		return "Other";
+	}
+}
+
+void (*jsLogger)(char* category, char* level, char* message) = NULL;
+
 void _log(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(logger);
-	UNUSED(category);
-	UNUSED(level);
-	UNUSED(format);
-	UNUSED(args);
+
+	char* categoryName = mLogCategoryName(category);
+	if (categoryName == NULL) {
+		categoryName = "Unknown";
+	}
+
+	char s[1024] = { 0 };
+
+	vsnprintf(s, 1024, format, args);
+
+	if (jsLogger != NULL) {
+		jsLogger(categoryName, getLogLevelStr(level), s);
+	}
+}
+
+EMSCRIPTEN_KEEPALIVE void setLogFunction(void (*logger)(char* category, char* level, char* message)) {
+	jsLogger = logger;
 }
 
 EMSCRIPTEN_KEEPALIVE void setupConstants(void) {

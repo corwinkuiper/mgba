@@ -5,16 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 Module.loadGame = (name) => {
-  const loadGame = cwrap('loadGame', 'number', ['string']);
+  const loadGame = cwrap("loadGame", "number", ["string"]);
 
   if (loadGame(name)) {
-    const arr = name.split('.');
+    const arr = name.split(".");
     arr.pop();
 
-    const saveName = arr.join('.') + '.sav';
+    const saveName = arr.join(".") + ".sav";
 
     Module.gameName = name;
-    Module.saveName = saveName.replace('/data/games/', '/data/saves/');
+    Module.saveName = saveName.replace("/data/games/", "/data/saves/");
     return true;
   }
 
@@ -26,18 +26,18 @@ Module.getSave = () => {
 };
 
 Module.listRoms = () => {
-  return FS.readdir('/data/games/');
+  return FS.readdir("/data/games/");
 };
 
 Module.listSaves = () => {
-  return FS.readdir('/data/saves/');
+  return FS.readdir("/data/saves/");
 };
 
 // yanked from main.c for ease of use
 Module.FSInit = () => {
   return new Promise((resolve, reject) => {
-    FS.mkdir('/data');
-    FS.mount(FS.filesystems.IDBFS, {}, '/data');
+    FS.mkdir("/data");
+    FS.mount(FS.filesystems.IDBFS, {}, "/data");
 
     // load data from IDBFS
     FS.syncfs(true, (err) => {
@@ -48,19 +48,19 @@ Module.FSInit = () => {
       // When we read from indexedb, these directories may or may not exist.
       // If we mkdir and they already exist they throw, so just catch all of them.
       try {
-        FS.mkdir('/data/saves');
+        FS.mkdir("/data/saves");
       } catch (e) {}
       try {
-        FS.mkdir('/data/states');
+        FS.mkdir("/data/states");
       } catch (e) {}
       try {
-        FS.mkdir('/data/games');
+        FS.mkdir("/data/games");
       } catch (e) {}
       try {
-        FS.mkdir('/data/cheats');
+        FS.mkdir("/data/cheats");
       } catch (e) {}
       try {
-        FS.mkdir('/data/screenshots');
+        FS.mkdir("/data/screenshots");
       } catch (e) {}
 
       resolve();
@@ -83,30 +83,30 @@ Module.FSSync = () => {
 
 Module.filePaths = () => {
   return {
-    root: '/data',
-    cheatsPath: '/data/cheats',
-    gamePath: '/data/games',
-    savePath: '/data/saves',
-    saveStatePath: '/data/states',
-    screenshotsPath: '/data/screenshots',
+    root: "/data",
+    cheatsPath: "/data/cheats",
+    gamePath: "/data/games",
+    savePath: "/data/saves",
+    saveStatePath: "/data/states",
+    screenshotsPath: "/data/screenshots",
   };
 };
 
 Module.uploadSaveOrSaveState = (file, callback) => {
-  const split = file.name.split('.');
+  const split = file.name.split(".");
   if (split.length < 2) {
-    console.warn('unrecognized file extension: ' + file.name);
+    console.warn("unrecognized file extension: " + file.name);
     return;
   }
   const extension = split[split.length - 1].toLowerCase();
 
   let dir = null;
-  if (extension == 'sav') {
-    dir = '/data/saves/';
-  } else if (extension.startsWith('ss')) {
-    dir = '/data/states/';
+  if (extension == "sav") {
+    dir = "/data/saves/";
+  } else if (extension.startsWith("ss")) {
+    dir = "/data/states/";
   } else {
-    console.warn('unrecognized file extension: ' + extension);
+    console.warn("unrecognized file extension: " + extension);
     return;
   }
 
@@ -122,18 +122,18 @@ Module.uploadSaveOrSaveState = (file, callback) => {
 };
 
 Module.uploadRom = (file, callback) => {
-  const split = file.name.split('.');
+  const split = file.name.split(".");
   if (split.length < 2) {
-    console.warn('unrecognized file extension: ' + file.name);
+    console.warn("unrecognized file extension: " + file.name);
     return;
   }
   const extension = split[split.length - 1].toLowerCase();
 
   let dir = null;
-  if (['gba', 'gbc', 'gb', 'zip', '7z'].includes(extension)) {
-    dir = '/data/games/';
+  if (["gba", "gbc", "gb", "zip", "7z"].includes(extension)) {
+    dir = "/data/games/";
   } else {
-    console.warn('unrecognized file extension: ' + extension);
+    console.warn("unrecognized file extension: " + extension);
     return;
   }
 
@@ -149,18 +149,18 @@ Module.uploadRom = (file, callback) => {
 };
 
 Module.uploadCheats = (file, callback) => {
-  const split = file.name.split('.');
+  const split = file.name.split(".");
   if (split.length < 2) {
-    console.warn('unrecognized file extension: ' + file.name);
+    console.warn("unrecognized file extension: " + file.name);
     return;
   }
   const extension = split[split.length - 1].toLowerCase();
 
   let dir = null;
-  if (extension == 'cheats') {
-    dir = '/data/cheats/';
+  if (extension == "cheats") {
+    dir = "/data/cheats/";
   } else {
-    console.warn('unrecognized file extension: ' + extension);
+    console.warn("unrecognized file extension: " + extension);
     return;
   }
 
@@ -176,110 +176,110 @@ Module.uploadCheats = (file, callback) => {
 };
 
 const keyBindings = new Map([
-  ['a', 0],
-  ['b', 1],
-  ['select', 2],
-  ['start', 3],
-  ['right', 4],
-  ['left', 5],
-  ['up', 6],
-  ['down', 7],
-  ['r', 8],
-  ['l', 9],
+  ["a", 0],
+  ["b", 1],
+  ["select", 2],
+  ["start", 3],
+  ["right", 4],
+  ["left", 5],
+  ["up", 6],
+  ["down", 7],
+  ["r", 8],
+  ["l", 9],
 ]);
 
 Module.buttonPress = (name) => {
-  const buttonPress = cwrap('buttonPress', null, ['number']);
+  const buttonPress = cwrap("buttonPress", null, ["number"]);
   buttonPress(keyBindings.get(name.toLowerCase()));
 };
 
 Module.buttonUnpress = (name) => {
-  const buttonUnpress = cwrap('buttonUnpress', null, ['number']);
+  const buttonUnpress = cwrap("buttonUnpress", null, ["number"]);
   buttonUnpress(keyBindings.get(name.toLowerCase()));
 };
 
 // bindingName is the key name you want to associate to an input, ex. 'p' key binding -> 'a' input
 // inputName is the name of the input to bind to, ex 'a', 'b', 'up' etc.
 Module.bindKey = (bindingName, inputName) => {
-  const bindKey = cwrap('bindKey', null, ['string', 'number']);
+  const bindKey = cwrap("bindKey", null, ["string", "number"]);
   bindKey(bindingName, keyBindings.get(inputName.toLowerCase()));
 };
 
 Module.pauseGame = () => {
-  const pauseGame = cwrap('pauseGame', null, []);
+  const pauseGame = cwrap("pauseGame", null, []);
   pauseGame();
 };
 
 Module.resumeGame = () => {
-  const resumeGame = cwrap('resumeGame', null, []);
+  const resumeGame = cwrap("resumeGame", null, []);
   resumeGame();
 };
 
 Module.getVolume = () => {
-  const getVolume = cwrap('getVolume', 'number', []);
+  const getVolume = cwrap("getVolume", "number", []);
   return getVolume();
 };
 
 Module.setVolume = (percent) => {
-  const setVolume = cwrap('setVolume', null, ['number']);
+  const setVolume = cwrap("setVolume", null, ["number"]);
   setVolume(percent);
 };
 
 Module.getMainLoopTimingMode = () => {
-  const getMainLoopTimingMode = cwrap('getMainLoopTimingMode', 'number', []);
+  const getMainLoopTimingMode = cwrap("getMainLoopTimingMode", "number", []);
   return getMainLoopTimingMode();
 };
 
 Module.getMainLoopTimingValue = () => {
-  const getMainLoopTimingValue = cwrap('getMainLoopTimingValue', 'number', []);
+  const getMainLoopTimingValue = cwrap("getMainLoopTimingValue", "number", []);
   return getMainLoopTimingValue();
 };
 
 Module.setMainLoopTiming = (mode, value) => {
-  const setMainLoopTiming = cwrap('setMainLoopTiming', 'number', [
-    'number',
-    'number',
+  const setMainLoopTiming = cwrap("setMainLoopTiming", "number", [
+    "number",
+    "number",
   ]);
   setMainLoopTiming(mode, value);
 };
 
 Module.quitGame = () => {
-  const quitGame = cwrap('quitGame', null, []);
+  const quitGame = cwrap("quitGame", null, []);
   quitGame();
 };
 
 Module.quitMgba = () => {
-  const quitMgba = cwrap('quitMgba', null, []);
+  const quitMgba = cwrap("quitMgba", null, []);
   quitMgba();
 };
 
 Module.quickReload = () => {
-  const quickReload = cwrap('quickReload', null, []);
+  const quickReload = cwrap("quickReload", null, []);
   quickReload();
 };
 
 Module.toggleInput = (toggle) => {
-  const setEventEnable = cwrap('setEventEnable', null, ['boolean']);
+  const setEventEnable = cwrap("setEventEnable", null, ["boolean"]);
   setEventEnable(toggle);
 };
 
 Module.screenshot = (fileName) => {
-  const screenshot = cwrap('screenshot', 'boolean', ['string']);
+  const screenshot = cwrap("screenshot", "boolean", ["string"]);
   return screenshot(fileName);
 };
 
 Module.saveState = (slot) => {
-  const saveState = cwrap('saveState', 'boolean', ['number']);
+  const saveState = cwrap("saveState", "boolean", ["number"]);
   return saveState(slot);
 };
 
 Module.loadState = (slot) => {
-  const loadState = cwrap('loadState', 'boolean', ['number']);
+  const loadState = cwrap("loadState", "boolean", ["number"]);
   return loadState(slot);
 };
 
 Module.saveStateSlot = (slot, flags) => {
-  var saveStateSlot = cwrap('saveStateSlot', 'number', ['number', 'number']);
+  var saveStateSlot = cwrap("saveStateSlot", "number", ["number", "number"]);
   Module.saveStateSlot = (slot, flags) => {
     if (flags === undefined) {
       flags = 0b111111;
@@ -290,7 +290,7 @@ Module.saveStateSlot = (slot, flags) => {
 };
 
 Module.loadStateSlot = (slot, flags) => {
-  var loadStateSlot = cwrap('loadStateSlot', 'number', ['number', 'number']);
+  var loadStateSlot = cwrap("loadStateSlot", "number", ["number", "number"]);
   Module.loadStateSlot = (slot, flags) => {
     if (flags === undefined) {
       flags = 0b111101;
@@ -301,21 +301,21 @@ Module.loadStateSlot = (slot, flags) => {
 };
 
 Module.autoLoadCheats = () => {
-  const autoLoadCheats = cwrap('autoLoadCheats', 'bool', []);
+  const autoLoadCheats = cwrap("autoLoadCheats", "bool", []);
   return autoLoadCheats();
 };
 
 Module.setFastForwardMultiplier = (multiplier) => {
-  const setFastForwardMultiplier = cwrap('setFastForwardMultiplier', null, [
-    'number',
+  const setFastForwardMultiplier = cwrap("setFastForwardMultiplier", null, [
+    "number",
   ]);
   setFastForwardMultiplier(multiplier);
 };
 
 Module.getFastForwardMultiplier = () => {
   const getFastForwardMultiplier = cwrap(
-    'getFastForwardMultiplier',
-    'number',
+    "getFastForwardMultiplier",
+    "number",
     []
   );
   return getFastForwardMultiplier();
@@ -334,10 +334,10 @@ const coreCallbackStore = {
 // adds user callbacks to the callback store, and makes function(s) available to the core in c
 // passing null clears the callback, allowing for partial additions/removals of callbacks
 Module.addCoreCallbacks = (callbacks) => {
-  const addCoreCallbacks = cwrap('addCoreCallbacks', null, ['number']);
+  const addCoreCallbacks = cwrap("addCoreCallbacks", null, ["number"]);
 
   Object.keys(coreCallbackStore).forEach((callbackKey) => {
-    const callbackName = callbackKey.replace('CallbackPtr', 'Callback');
+    const callbackName = callbackKey.replace("CallbackPtr", "Callback");
     const callback = callbacks[callbackName];
 
     // if the pointer is stored remove the old function pointer if a new callback was passed, or the callback is null
@@ -348,7 +348,7 @@ Module.addCoreCallbacks = (callbacks) => {
 
     // add the new function pointer to the store if present
     if (!!callback)
-      coreCallbackStore[callbackKey] = addFunction(callback, 'vi');
+      coreCallbackStore[callbackKey] = addFunction(callback, "vi");
   });
 
   // add the callbacks from the store to the core
@@ -360,4 +360,31 @@ Module.addCoreCallbacks = (callbacks) => {
     coreCallbackStore.videoFrameEndedCallbackPtr,
     coreCallbackStore.videoFrameStartedCallbackPtr
   );
+};
+
+const logMessageEventListeners = new Set();
+let logInitialised = false;
+
+const logMessageCallback = (category_ptr, level_ptr, message_ptr) => {
+  const category = UTF8ToString(category_ptr);
+  const level = UTF8ToString(level_ptr);
+  const message = UTF8ToString(message_ptr);
+
+  for (let logger of logMessageEventListeners) {
+    logger(category, level, message);
+  }
+};
+
+Module.addLogListener = (callback) => {
+  if (!logInitialised) {
+    const setLogMessageCallback = cwrap("setLogFunction", null, ["number"]);
+    const logMessagePointer = addFunction(logMessageCallback, "vppp");
+    setLogMessageCallback(logMessagePointer);
+    logInitialised = true;
+  }
+  logMessageEventListeners.add(callback);
+};
+
+Module.removeLogListener = (callback) => {
+  logMessageEventListeners.delete(callback);
 };

@@ -10,9 +10,19 @@ declare namespace mGBA {
     screenshotsPath: string;
   }
 
+  export type LogLevel =
+    | "Fatal"
+    | "Error"
+    | "Warn"
+    | "Info"
+    | "Debug"
+    | "Stub"
+    | "Game Error"
+    | "Other";
+
   // see: https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state
   //      interrupted is a valid property on iOS
-  type ExtendedAudioContextState = AudioContextState | 'interrupted';
+  type ExtendedAudioContextState = AudioContextState | "interrupted";
 
   export type coreCallbacks = {
     alarmCallback?: (() => void) | null;
@@ -55,6 +65,12 @@ declare namespace mGBA {
     uploadRom(file: File, callback?: () => void): void;
     uploadSaveOrSaveState(file: File, callback?: () => void): void;
     addCoreCallbacks(coreCallbacks: coreCallbacks): void;
+    addLogListener(
+      listener: (category: string, level: LogLevel, message: string) => void
+    ): void;
+    removeLogListener(
+      listener: (category: string, level: LogLevel, message: string) => void
+    ): void;
     // custom variables
     version: {
       projectName: string;
@@ -71,7 +87,7 @@ declare namespace mGBA {
         currentOutputBuffer: AudioBuffer;
         scriptProcessorNode: ScriptProcessorNode;
       };
-      audioContext: Omit<AudioContext, 'state'> & {
+      audioContext: Omit<AudioContext, "state"> & {
         readonly state: ExtendedAudioContextState;
       };
     };
