@@ -1,0 +1,27 @@
+name: Build windows dll
+
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get libepoxy
+        run: vcpkg install libepoxy
+      - name: Add build dir
+        run: mkdir build
+      - name: Configure build
+        working-directory: "build"
+        run: cmake .. -DM_CORE_GBA=ON -DDISABLE_DEPS=OFF -DUSE_EPOXY=ON -DBUILD_SHARED=ON -DUSE_DEBUGGERS=OFF -DUSE_GDB_STUB=OFF -DUSE_FFMPEG=OFF -DUSE_ZLIB=OFF -DUSE_MINIZIP=OFF -DUSE_PNG=OFF -DUSE_LIBZIP=OFF -DUSE_SQLITE3=OFF -DUSE_ELF=OFF -DUSE_LUA=OFF -DM_CORE_GB=OFF -DUSE_LZMA=OFF -DUSE_DISCORD_RPC=OFF -DENABLE_SCRIPTING=OFF -DBUILD_QT=OFF -DBUILD_SDL=OFF -DBUILD_LIBRETRO=OFF -DBUILD_PERF=OFF -DBUILD_TEST=OFF -DBUILD_SUITE=OFF -DBUILD_CINEMA=OFF -DBUILD_ROM_TEST=OFF -DBUILD_EXAMPLE=OFF -DBUILD_PYTHON=OFF -DBUILD_STATIC=OFF -DSKIP_LIBRARY=OFF -DBUILD_GL=OFF -DBUILD_GLES2=OFF -DBUILD_GLES3=OFF -DBUILD_DOCGEN=OFF -DDISTBUILD=OFF "-DCMAKE_TOOLCHAIN_FILE=$Env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+      - name: Build mgba
+        working-directory: "build"
+        run: cmake --build . --config Release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mgba
+          path: "build/Release"
