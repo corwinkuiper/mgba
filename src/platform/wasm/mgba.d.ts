@@ -71,6 +71,7 @@ declare namespace mGBA {
     removeLogListener(
       listener: (category: string, level: LogLevel, message: string) => void
     ): void;
+    setInterframeBlending(blending: boolean): void;
     // custom variables
     version: {
       projectName: string;

@@ -388,3 +388,8 @@ Module.addLogListener = (callback) => {
 Module.removeLogListener = (callback) => {
   logMessageEventListeners.delete(callback);
 };
+
+Module.setInterframeBlending = (blending) => {
+  const setInterframeBlending = cwrap("setInterframeBlending", null, ["boolean"]);
+  setInterframeBlending(blending);
+}

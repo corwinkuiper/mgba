@@ -446,6 +446,11 @@ EMSCRIPTEN_KEEPALIVE void setLogFunction(void (*logger)(char* category, char* le
 	jsLogger = logger;
 }
 
+EMSCRIPTEN_KEEPALIVE void setInterframeBlending(bool blending) {
+    mCoreConfigSetDefaultIntValue(&renderer.core->config, "interframeBlending", blending);
+    renderer.core->reloadConfigOption(renderer.core, "interframeBlending", &renderer.core->config);
+}
+
 EMSCRIPTEN_KEEPALIVE void setupConstants(void) {
 	EM_ASM(({
 		       Module.version = {
