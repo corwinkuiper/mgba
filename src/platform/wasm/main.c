@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
+#include <SDL2/SDL_blendmode.h>
+#include <SDL2/SDL_render.h>
 #include <mgba-util/vfs.h>
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
@@ -102,12 +104,29 @@ void runLoop() {
 		renderer.core->currentVideoSize(renderer.core, &w, &h);
 
 		SDL_Rect rect = { .x = 0, .y = 0, .w = w, .h = h };
-		SDL_UnlockTexture(renderer.sdlTex);
-		SDL_RenderCopy(renderer.sdlRenderer, renderer.sdlTex, &rect, &rect);
+		SDL_UnlockTexture(renderer.sdlTex[renderer.texSide]);
+		SDL_RenderClear(renderer.sdlRenderer);
+
+		SDL_SetTextureBlendMode(renderer.sdlTex[0], SDL_BLENDMODE_NONE);
+		SDL_SetTextureBlendMode(renderer.sdlTex[1], SDL_BLENDMODE_BLEND);
+		SDL_SetTextureAlphaMod(renderer.sdlTex[0], 255);
+		SDL_SetTextureAlphaMod(renderer.sdlTex[1], 128);
+
+		SDL_RenderCopy(renderer.sdlRenderer, renderer.sdlTex[0], &rect, &rect);
+		if (renderer.interframeBlending) {
+		    SDL_RenderCopy(renderer.sdlRenderer, renderer.sdlTex[1], &rect, &rect);
+		}
+
 		SDL_RenderPresent(renderer.sdlRenderer);
 
+		if (renderer.interframeBlending) {
+		    renderer.texSide ^= 1;
+		} else {
+		    renderer.texSide = 0;
+		}
+
 		int stride;
-		SDL_LockTexture(renderer.sdlTex, 0, (void**) &renderer.outputBuffer, &stride);
+		SDL_LockTexture(renderer.sdlTex[renderer.texSide], 0, (void**) &renderer.outputBuffer, &stride);
 		renderer.core->setVideoBuffer(renderer.core, renderer.outputBuffer, stride / BYTES_PER_PIXEL);
 		return;
 	} else {
@@ -318,14 +337,16 @@ EMSCRIPTEN_KEEPALIVE bool loadGame(const char* name) {
 
 	unsigned w, h;
 	renderer.core->baseVideoSize(renderer.core, &w, &h);
-	if (renderer.sdlTex) {
-		SDL_DestroyTexture(renderer.sdlTex);
+	for (int i = 0; i < 2; i++) {
+    	if (renderer.sdlTex[i]) {
+    		SDL_DestroyTexture(renderer.sdlTex[i]);
+    	}
+    	renderer.sdlTex[i] =
+    	    SDL_CreateTexture(renderer.sdlRenderer, SDL_PIXELFORMAT_XBGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
 	}
-	renderer.sdlTex =
-	    SDL_CreateTexture(renderer.sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
 
 	int stride;
-	SDL_LockTexture(renderer.sdlTex, 0, (void**) &renderer.outputBuffer, &stride);
+	SDL_LockTexture(renderer.sdlTex[renderer.texSide], 0, (void**) &renderer.outputBuffer, &stride);
 	renderer.core->setVideoBuffer(renderer.core, renderer.outputBuffer, stride / BYTES_PER_PIXEL);
 	renderer.core->setAudioBufferSize(renderer.core, renderer.audio.samples * 2);
 
@@ -447,8 +468,7 @@ EMSCRIPTEN_KEEPALIVE void setLogFunction(void (*logger)(char* category, char* le
 }
 
 EMSCRIPTEN_KEEPALIVE void setInterframeBlending(bool blending) {
-    mCoreConfigSetDefaultIntValue(&renderer.core->config, "interframeBlending", blending);
-    renderer.core->reloadConfigOption(renderer.core, "interframeBlending", &renderer.core->config);
+    renderer.interframeBlending = blending;
 }
 
 EMSCRIPTEN_KEEPALIVE void setupConstants(void) {

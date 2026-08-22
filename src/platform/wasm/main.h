@@ -11,8 +11,12 @@ struct mEmscriptenRenderer {
 	color_t* outputBuffer;
 
 	SDL_Window* window;
-	SDL_Texture* sdlTex;
+	SDL_Texture* sdlTex[2];
 	SDL_Renderer* sdlRenderer;
+
+	int texSide;
+
+	bool interframeBlending;
 
 	struct mSDLAudio audio;
 
